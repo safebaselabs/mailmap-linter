@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4", default-features = false, features = ["std", "derive"] }
-regex = { version = "1", default-features = false, features = ["std", "unicode-perl"] }
+regex = { version = "1", default-features = true, features = ["unicode-perl"] }
 anyhow = { version = "1", default-features = false }
 tracing = { version = "0.1", default-features = false, features = ["std"] }
 tracing-subscriber = { version = "0.3", default-features = false, features = ["fmt", "ansi", "env-filter"] }
