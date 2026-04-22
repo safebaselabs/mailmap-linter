@@ -14,7 +14,7 @@ pub fn validate_mailmap_exists(path: &str) -> Result<()> {
 }
 
 pub fn validate_mailmap_format(mailmap: &[String]) -> Result<()> {
-    let format = r"^[A-Z][[:alpha:]]+ [A-Z][[:alpha:]]+ <.*> (.*?) <.*?>$";
+    let format = r"^\p{L}[\p{L}\-]+ \p{L}[\p{L}\-]+ <.*> (.*?) <.*?>$";
     let regex = Regex::new(format)?;
 
     for (line_number, mapping) in mailmap.iter().enumerate() {
@@ -116,10 +116,11 @@ mod tests {
     }
 
     #[test]
-    fn test_mailmap_format_invalid_missing_capital() {
+    fn test_mailmap_format_lowercase_start_now_allowed() {
         let mailmap =
             vec!["kevin Amado <k@g.com> Kevin Amado <k@g.com>".to_string()];
-        assert!(validate_mailmap_format(&mailmap).is_err());
+        // Lowercase letters are now allowed as they are valid Unicode letters
+        assert!(validate_mailmap_format(&mailmap).is_ok());
     }
 
     #[test]
@@ -147,9 +148,8 @@ mod tests {
     fn test_mailmap_format_accented_characters() {
         let mailmap =
             vec!["José García <j@g.com> José García <j@g.com>".to_string()];
-        // The current regex pattern starts with [A-Z] which only matches ASCII capitals,
-        // so accented character names starting with lowercase fail the pattern
-        assert!(validate_mailmap_format(&mailmap).is_err());
+        // Unicode letters including accented characters are now supported
+        assert!(validate_mailmap_format(&mailmap).is_ok());
     }
 
     #[test]
@@ -157,9 +157,8 @@ mod tests {
         let mailmap = vec![
             "Jean-Luc Dupont <j@g.com> Jean-Luc Dupont <j@g.com>".to_string(),
         ];
-        // The current regex doesn't support hyphens in names (they're not in [[:alpha:]])
-        // This test documents that behavior
-        assert!(validate_mailmap_format(&mailmap).is_err());
+        // Hyphens in names are now supported
+        assert!(validate_mailmap_format(&mailmap).is_ok());
     }
 
     #[test]
@@ -354,13 +353,13 @@ mod tests {
     }
 
     #[test]
-    fn test_validate_mailmap_format_multiple_errors() {
+    fn test_validate_mailmap_format_multiple_valid() {
         let mailmap = vec![
             "kevin Amado <k@g.com> Kevin Amado <k@g.com>".to_string(),
             "Alice Brown <a@g.com> Alice Brown <a@g.com>".to_string(),
         ];
-        // Should fail on first invalid format
-        assert!(validate_mailmap_format(&mailmap).is_err());
+        // Both are now valid as lowercase letters are allowed
+        assert!(validate_mailmap_format(&mailmap).is_ok());
     }
 
     #[test]
